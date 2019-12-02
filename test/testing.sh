@@ -11,9 +11,9 @@ _GREEN='\033[1;32m'
 _END_COLOR='\033[0m'
 
 _REAL_PATH="$(readlink -f -- "$0" 2>/dev/null)" || _REAL_PATH="$0"
-_BASE_NAME="$(basename -- "$_REAL_PATH")"
+_BASE_NAME="$(basename -- "$_REAL_PATH")" || return $?
 _LABEL="${_BASE_NAME%.sh}"
-_PROGRAM_PATH=$(echo "${_LABEL}"*.c)
+_PROGRAM_PATH=$(echo "${_LABEL}"*.c) || return $?
 _BIN_PATH="bin/${_PROGRAM_PATH%.c}"
 
 _passed=0
