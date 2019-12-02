@@ -4,7 +4,7 @@ REAL_PATH="$(readlink -f -- "$0" 2>/dev/null)" || REAL_PATH="$0"
 TEST_PATH="$(dirname -- "$REAL_PATH")" || exit $?
 
 cd -- "$TEST_PATH/.." || exit $?
-. test/testing.sh
+. test/testing.sh || exit $?
 
 
 main() {
