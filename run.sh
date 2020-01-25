@@ -4,45 +4,25 @@
 
 set -o nounset
 
-
-REAL_PATH="$(readlink -f -- "$0" 2>/dev/null)" || REAL_PATH="$0"
-BASE_PATH="$(dirname -- "$REAL_PATH")" || exit $?
-
-
-# Print the path to a puzzle solving executable.
-bin_path() {(
-    source_path="$1"
-    stem=${source_path%.c}
-    printf "bin/%s" "$stem"
-)}
-
-# Print the path to an input file.
-input_path() {(
-    label="$1"
-    printf "input/%s.txt" "$label"
-)}
-
 # Print a string indicating which command to use for timings.
-time_mode() {(
-    if env time --format="" true >/dev/null 2>&1; then
+time_mode() {
+    if env time --format="(%es)" true >/dev/null 2>&1; then
         echo 'env-time'
     elif (time -p true) >/dev/null 2>&1; then
         echo 'time-p'
     else
         echo 'time'
     fi
-)}
+}
 
 # Print the solution to a puzzle.
-solve() {(
-    bin="$1"
-    input="$2"
-    mode="$3"
-    day="$4"
+solve() { (
+    label="$1"
+    mode="$2"
+    source_filename="$3"
 
-    if [ "$day" ]; then
-        echo "# Day $day #"
-    fi
+    bin="bin/${source_filename%.c}"
+    input="input/${label}.txt"
 
     if [ "$mode" = 'env-time' ]; then
         env time --format="(%es)" "$bin" "$input"
@@ -53,13 +33,17 @@ solve() {(
     else
         "$bin" "$input"
     fi
-)}
+); }
 
 # Solve one puzzle if a day is given as an argument, else solve them all.
 #
 # If 'time' is given as an argument, print timings.
 #
 main() {
+    real_path="$(readlink -f -- "$0" 2>/dev/null)" || real_path="$0"
+    base_path="$(dirname -- "$real_path")" || return
+    cd -- "$base_path" || return
+
     if [ "${1-}" = "time" ]; then
         day="${2-}"
     else
@@ -72,32 +56,23 @@ main() {
         mode='none'
     fi
 
-    cd -- "$BASE_PATH" || return $?
-
     if [ "$day" ]; then
-        if ! label=$(printf 'd%02d' "$day") 2>/dev/null; then
-            printf "Error: can't use day '%s' as integer\n" "$day"
+        if ! label="$(printf 'd%02d' "$day")" 2>/dev/null; then
+            printf "Error: can't use day '%s' as integer\n" "$day" >&2
             return 1
         fi
-        source_path=$(echo "$label"*.c)
-        bin="$(bin_path "$source_path")"
-        if [ ! -e "$bin" ]; then
-            printf "Error: executable '%s' doesn't exist\n" "$bin"
-            return 1
-        fi
-        solve "$bin" "$(input_path "$label")" "$mode" ''
-        return $?
+
+        solve "$label" "$mode" "$label"_*.c
+        return
     fi
 
-    for source_path in d[0-9][0-9]*.c; do
-        label="${source_path%%_*}"
+    for source_filename in d[0-9][0-9]_*.c; do
+        label="${source_filename%%_*}"
         day="${label#d}"
         day="${day#0}"
 
-        bin="$(bin_path "$source_path")"
-        input="$(input_path "$label")"
-
-        solve "$bin" "$(input_path "$label")" "$mode" "$day"
+        echo "# Day $day #"
+        solve "$label" "$mode" "$source_filename"
         ret=$?
         echo
 
@@ -105,6 +80,8 @@ main() {
             return "$ret"
         fi
     done
+
+    return 0
 }
 
 main "$@"

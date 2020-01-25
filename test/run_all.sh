@@ -2,19 +2,11 @@
 
 # This script runs all tests and returns 0 (success) if we pass them all.
 
+real_path="$(readlink -f -- "$0" 2>/dev/null)" || real_path="$0"
+test_path="$(dirname -- "$real_path")" || exit
 
-REAL_PATH="$(readlink -f -- "$0" 2>/dev/null)" || REAL_PATH="$0"
-TEST_PATH="$(dirname -- "$REAL_PATH")" || exit $?
-
-
-main() {
-    cd -- "$TEST_PATH" || return $?
-
-    retval=0
-    for script_filename in d[0-9][0-9].sh; do
-        sh "$script_filename" || retval=1
-    done
-    return "$retval"
-}
-
-main
+retval=0
+for script_filename in "$test_path"/d[0-9][0-9].sh; do
+    sh "$script_filename" || retval=1
+done
+exit "$retval"
