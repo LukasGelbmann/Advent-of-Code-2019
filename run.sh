@@ -4,6 +4,9 @@
 
 set -o nounset
 
+_BLUE='\033[34;1m'
+_END_COLOR='\033[0m'
+
 # Print a string indicating which command to use for timings.
 time_mode() {
     if env time --format="(%es)" true >/dev/null 2>&1; then
@@ -66,12 +69,20 @@ main() {
         return
     fi
 
+    if [ -t 1 ]; then
+        heading="$_BLUE"
+        end_heading="$_END_COLOR"
+    else
+        heading=''
+        end_heading=''
+    fi
+
     for source_filename in d[0-9][0-9]_*.c; do
         label="${source_filename%%_*}"
         day="${label#d}"
         day="${day#0}"
 
-        echo "# Day $day #"
+        printf "${heading}# Day %d #${end_heading}\n" "$day"
         solve "$label" "$mode" "$source_filename"
         ret=$?
         echo
