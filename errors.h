@@ -9,7 +9,8 @@ typedef enum {
     SUCCESS,
 
     // Parsing errors
-    ERR_PARSE_INT,
+    ERR_PARSE_INT_INVALID,
+    ERR_PARSE_INT_OVERFLOW,
 
     // Memory-related errors
     ERR_OUT_OF_MEMORY,
