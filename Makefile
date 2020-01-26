@@ -32,7 +32,7 @@ days := $(subst d,,$(labels))
 days += $(patsubst 0%,%,$(filter 0%,$(days)))
 
 
-.PHONY: all $(days) test time clean
+.PHONY: all run $(days) test time clean
 
 all: $(bins)
 
@@ -43,6 +43,9 @@ $(bins): bin/%: obj/%.o $(module_objs) | bin
 
 $(objs) $(module_objs): obj/%.o: %.c $(module_headers) | obj
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+run: $(bins)
+	@sh run.sh
 
 $(days): $(bins)
 	@sh run.sh $@
