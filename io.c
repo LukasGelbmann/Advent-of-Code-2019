@@ -1,9 +1,10 @@
 #include "io.h"
 
+#include "errors.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,15 +31,14 @@ static error solve_for_file(error solve(FILE *in), const char *filename)
 
 int solve_all(error solve(FILE *in), int argc, char *const argv[])
 {
+    int exit_code = EXIT_SUCCESS;
     if (argc <= 1) {
         error err = solve(stdin);
         if (err) {
             print_error(err);
-            return EXIT_FAILURE;
+            exit_code = EXIT_FAILURE;
         }
     }
-
-    int exit_code = EXIT_SUCCESS;
     for (int i = 1; i < argc; i++) {
         error err = solve_for_file(solve, argv[i]);
         if (err) {
@@ -54,8 +54,11 @@ error parse_long(long *value_ptr, const char *str)
     char *end;
     errno = 0;
     *value_ptr = strtol(str, &end, 10);
-    if (errno == ERANGE || end == str || *end != '\0') {
-        return ERR_PARSE_INT;
+    if (errno == ERANGE) {
+        return ERR_PARSE_INT_OVERFLOW;
+    }
+    if (end == str || *end != '\0') {
+        return ERR_PARSE_INT_INVALID;
     }
     return SUCCESS;
 }

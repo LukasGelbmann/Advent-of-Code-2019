@@ -9,8 +9,10 @@ static const char *error_message(error err)
     switch (err) {
     case SUCCESS:
         return "success";
-    case ERR_PARSE_INT:
-        return "couldn't parse integer";
+    case ERR_PARSE_INT_INVALID:
+        return "can't parse integer (invalid argument)";
+    case ERR_PARSE_INT_OVERFLOW:
+        return "can't parse integer (outside valid range)";
     case ERR_OUT_OF_MEMORY:
         return "out of memory";
     case ERR_REALLOC:
