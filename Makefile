@@ -6,16 +6,17 @@ ifeq ($(debug), 1)
     # CC=clang and debug=1 as command-line arguments at the same time.
     # -Wunreachable-code has no effect in gcc, but in clang it does.
     CFLAGS += \
-        -g -save-temps=obj -Wno-unknown-warning-option -Wno-type-limits \
-        -Werror -Wextra -Wbad-function-cast -Wcast-align=strict -Wcast-qual \
-        -Wconversion -Wdouble-promotion -Wduplicated-branches \
-        -Wduplicated-cond -Wformat=2 -Winit-self -Winline -Winvalid-pch \
-        -Wjump-misses-init -Wlogical-not-parentheses -Wlogical-op \
-        -Wmissing-declarations -Wmissing-format-attribute \
-        -Wmissing-include-dirs -Wmissing-prototypes -Wnested-externs \
-        -Wnull-dereference -Wold-style-definition -Wredundant-decls -Wshadow \
-        -Wstrict-overflow=2 -Wstrict-prototypes -Wundef -Wunreachable-code \
-        -Wwrite-strings
+        -g -save-temps=obj \
+        -fsanitize=address,float-cast-overflow,float-divide-by-zero,undefined \
+        -Wno-unknown-warning-option -Wno-type-limits -Werror -Wextra \
+        -Wbad-function-cast -Wcast-align=strict -Wcast-qual -Wconversion \
+        -Wdouble-promotion -Wduplicated-branches -Wduplicated-cond -Wformat=2 \
+        -Winit-self -Winline -Winvalid-pch -Wjump-misses-init \
+        -Wlogical-not-parentheses -Wlogical-op -Wmissing-declarations \
+        -Wmissing-format-attribute -Wmissing-include-dirs \
+        -Wmissing-prototypes -Wnested-externs -Wnull-dereference \
+        -Wold-style-definition -Wredundant-decls -Wshadow -Wstrict-overflow=2 \
+        -Wstrict-prototypes -Wundef -Wunreachable-code -Wwrite-strings
 endif
 
 programs := $(sort $(wildcard d[0-9][0-9]*.c))
@@ -23,7 +24,7 @@ stems := $(programs:%.c=%)
 bins := $(stems:%=bin/%)
 objs := $(programs:%.c=obj/%.o)
 
-module_headers = $(sort $(wildcard *.h))
+module_headers := $(sort $(wildcard *.h))
 module_objs := $(module_headers:%.h=obj/%.o)
 
 labels := $(foreach stem,$(stems),$(firstword $(subst _, ,$(stem))))
