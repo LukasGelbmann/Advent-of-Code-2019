@@ -50,7 +50,7 @@ test: $(bins)
 	@sh test/run_all.sh
 
 time: $(bins)
-	@sh run.sh time
+	@sh run.sh --time
 
 bin obj:
 	mkdir $@
