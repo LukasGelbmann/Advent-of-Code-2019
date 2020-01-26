@@ -7,6 +7,11 @@ set -o nounset
 _BLUE='\033[34;1m'
 _END_COLOR='\033[0m'
 
+# Print a usage message to stderr.
+usage() {
+    printf "Usage: %s [-t|--time] [day] \n" "$0" >&2
+}
+
 # Print a string indicating which command to use for timings.
 time_mode() {
     if env time --format="(%es)" true >/dev/null 2>&1; then
@@ -40,31 +45,42 @@ solve() { (
 
 # Solve one puzzle if a day is given as an argument, else solve them all.
 #
-# If 'time' is given as an argument, print timings.
+# If '-t' or '--time' is given as an argument, print timings.
 #
 main() {
     real_path="$(readlink -f -- "$0" 2>/dev/null)" || real_path="$0"
     base_path="$(dirname -- "$real_path")" || return
     cd -- "$base_path" || return
 
-    if [ "${1-}" = "time" ]; then
-        day="${2-}"
-    else
-        day="${1-}"
-    fi
+    label=''
+    mode=''
+    for arg in "$@"; do
+        case "$arg" in
+        -*)
+            if [ "$arg" = '-t' ] || [ "$arg" = '--time' ]; then
+                if [ -z "$mode" ]; then
+                    mode="$(time_mode)"
+                fi
+            else
+                usage
+                return 1
+            fi
+            ;;
+        *)
+            if [ "$label" ]; then
+                usage
+                return 1
+            fi
+            if ! label="$(printf 'd%02d' "$arg")" 2>/dev/null; then
+                printf "Error: day must be an integer, not '%s'\n" "$arg" >&2
+                usage
+                return 1
+            fi
+            ;;
+        esac
+    done
 
-    if [ "${1-}" = "time" ] || [ "${2-}" = "time" ]; then
-        mode="$(time_mode)"
-    else
-        mode='none'
-    fi
-
-    if [ "$day" ]; then
-        if ! label="$(printf 'd%02d' "$day")" 2>/dev/null; then
-            printf "Error: can't use day '%s' as integer\n" "$day" >&2
-            return 1
-        fi
-
+    if [ "$label" ]; then
         solve "$label" "$mode" "$label"_*.c
         return
     fi
